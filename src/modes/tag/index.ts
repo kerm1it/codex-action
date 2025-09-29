@@ -13,6 +13,7 @@ import {
 import { createPrompt, generateDefaultPrompt } from "../../create-prompt";
 import { isEntityContext } from "../../github/context";
 import type { PreparedContext } from "../../create-prompt/types";
+import { shouldUseCodex, buildCodexArgs } from "../shared/codex-builder";
 import type { FetchDataResult } from "../../github/data/fetcher";
 import { parseAllowedTools } from "../agent/parse-tools";
 
@@ -182,7 +183,24 @@ export const tagMode: Mode = {
       claudeArgs += ` ${userClaudeArgs}`;
     }
 
-    core.setOutput("claude_args", claudeArgs.trim());
+    // Check if we should use Codex instead of Claude
+    if (shouldUseCodex()) {
+      // Build Codex arguments from Claude arguments and tag mode requirements
+      const userCodexArgs =
+        process.env.INPUT_CODEX_ARGS || process.env.CODEX_ARGS || "";
+      const codexArgs = buildCodexArgs(
+        claudeArgs.trim(),
+        undefined,
+        userCodexArgs,
+      );
+
+      core.setOutput("codex_args", codexArgs);
+      console.log(
+        `Tag mode: Built Codex arguments for ${tagModeTools.length} required tools`,
+      );
+    } else {
+      core.setOutput("claude_args", claudeArgs.trim());
+    }
 
     return {
       commentId,

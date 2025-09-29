@@ -7,6 +7,7 @@ import { parseAllowedTools } from "./parse-tools";
 import { configureGitAuth } from "../../github/operations/git-config";
 import type { GitHubContext } from "../../github/context";
 import { isEntityContext } from "../../github/context";
+import { shouldUseCodex, buildCodexArgs } from "../shared/codex-builder";
 
 /**
  * Extract GitHub context as environment variables for agent mode
@@ -152,7 +153,20 @@ export const agentMode: Mode = {
     // Append user's claude_args (which may have more --mcp-config flags)
     claudeArgs = `${claudeArgs} ${userClaudeArgs}`.trim();
 
-    core.setOutput("claude_args", claudeArgs);
+    // Check if we should use Codex instead of Claude
+    if (shouldUseCodex()) {
+      // Build Codex arguments from Claude arguments
+      const userCodexArgs =
+        process.env.INPUT_CODEX_ARGS || process.env.CODEX_ARGS || "";
+      const codexArgs = buildCodexArgs(claudeArgs, undefined, userCodexArgs);
+
+      core.setOutput("codex_args", codexArgs);
+      console.log(
+        `Agent mode: Built Codex arguments with ${allowedTools.length} allowed tools`,
+      );
+    } else {
+      core.setOutput("claude_args", claudeArgs);
+    }
 
     return {
       commentId: undefined,

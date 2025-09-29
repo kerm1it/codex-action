@@ -1,15 +1,34 @@
 /**
- * Validates the environment variables required for running Claude Code
- * based on the selected provider (Anthropic API, AWS Bedrock, or Google Vertex AI)
+ * Validates the environment variables required for running Claude Code or Codex
+ * based on the selected provider (Anthropic API, AWS Bedrock, Google Vertex AI, or OpenAI API)
  */
 export function validateEnvironmentVariables() {
+  const useCodex =
+    process.env.INPUT_USE_CODEX === "true" ||
+    process.env.INPUT_PATH_TO_CODEX_EXECUTABLE;
   const useBedrock = process.env.CLAUDE_CODE_USE_BEDROCK === "1";
   const useVertex = process.env.CLAUDE_CODE_USE_VERTEX === "1";
   const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
   const claudeCodeOAuthToken = process.env.CLAUDE_CODE_OAUTH_TOKEN;
+  const openaiApiKey =
+    process.env.OPENAI_API_KEY || process.env.INPUT_OPENAI_API_KEY;
 
   const errors: string[] = [];
 
+  // If using Codex, validate OpenAI requirements instead of Anthropic
+  if (useCodex) {
+    if (!openaiApiKey) {
+      errors.push("OPENAI_API_KEY is required when using Codex CLI.");
+    }
+    // Skip other validations for Codex mode
+    if (errors.length > 0) {
+      const errorMessage = `Environment variable validation failed:\n${errors.map((e) => `  - ${e}`).join("\n")}`;
+      throw new Error(errorMessage);
+    }
+    return; // Early return for Codex mode
+  }
+
+  // Original Claude Code validation logic
   if (useBedrock && useVertex) {
     errors.push(
       "Cannot use both Bedrock and Vertex AI simultaneously. Please set only one provider.",

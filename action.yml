@@ -61,8 +61,29 @@ inputs:
     required: false
     default: "false"
 
+  # Codex configuration
+  use_codex:
+    description: "Use OpenAI Codex CLI instead of Claude Code"
+    required: false
+    default: "false"
+  openai_api_key:
+    description: "OpenAI API key (required when using Codex)"
+    required: false
+  openai_base_url:
+    description: "Custom OpenAI API base URL"
+    required: false
+    default: "https://api.openai.com/v1"
+  path_to_codex_executable:
+    description: "Optional path to a custom Codex executable. If provided, skips automatic installation and uses this executable instead."
+    required: false
+    default: ""
+
   claude_args:
     description: "Additional arguments to pass directly to Claude CLI"
+    required: false
+    default: ""
+  codex_args:
+    description: "Additional arguments to pass directly to Codex CLI"
     required: false
     default: ""
   additional_permissions:
@@ -174,16 +195,30 @@ runs:
         echo "Base-action dependencies installed"
         cd -
 
-        # Install Claude Code if no custom executable is provided
-        if [ -z "${{ inputs.path_to_claude_code_executable }}" ]; then
-          echo "Installing Claude Code..."
-          curl -fsSL https://claude.ai/install.sh | bash -s 1.0.128
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+        # Install AI CLI based on configuration
+        if [ "${{ inputs.use_codex }}" == "true" ]; then
+          # Install Codex CLI if no custom executable is provided
+          if [ -z "${{ inputs.path_to_codex_executable }}" ]; then
+            echo "Installing Codex CLI..."
+            npm install -g @openai/codex
+          else
+            echo "Using custom Codex executable: ${{ inputs.path_to_codex_executable }}"
+            # Add the directory containing the custom executable to PATH
+            CODEX_DIR=$(dirname "${{ inputs.path_to_codex_executable }}")
+            echo "$CODEX_DIR" >> "$GITHUB_PATH"
+          fi
         else
-          echo "Using custom Claude Code executable: ${{ inputs.path_to_claude_code_executable }}"
-          # Add the directory containing the custom executable to PATH
-          CLAUDE_DIR=$(dirname "${{ inputs.path_to_claude_code_executable }}")
-          echo "$CLAUDE_DIR" >> "$GITHUB_PATH"
+          # Install Claude Code if no custom executable is provided
+          if [ -z "${{ inputs.path_to_claude_code_executable }}" ]; then
+            echo "Installing Claude Code..."
+            curl -fsSL https://claude.ai/install.sh | bash -s 1.0.128
+            echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+          else
+            echo "Using custom Claude Code executable: ${{ inputs.path_to_claude_code_executable }}"
+            # Add the directory containing the custom executable to PATH
+            CLAUDE_DIR=$(dirname "${{ inputs.path_to_claude_code_executable }}")
+            echo "$CLAUDE_DIR" >> "$GITHUB_PATH"
+          fi
         fi
 
     - name: Setup Network Restrictions
@@ -209,6 +244,7 @@ runs:
         INPUT_PROMPT_FILE: ${{ runner.temp }}/claude-prompts/claude-prompt.txt
         INPUT_SETTINGS: ${{ inputs.settings }}
         INPUT_CLAUDE_ARGS: ${{ steps.prepare.outputs.claude_args }}
+        INPUT_CODEX_ARGS: ${{ inputs.codex_args }}
         INPUT_EXPERIMENTAL_SLASH_COMMANDS_DIR: ${{ github.action_path }}/slash-commands
         INPUT_ACTION_INPUTS_PRESENT: ${{ steps.prepare.outputs.action_inputs_present }}
         INPUT_PATH_TO_CLAUDE_CODE_EXECUTABLE: ${{ inputs.path_to_claude_code_executable }}
@@ -226,6 +262,14 @@ runs:
         ANTHROPIC_CUSTOM_HEADERS: ${{ env.ANTHROPIC_CUSTOM_HEADERS }}
         CLAUDE_CODE_USE_BEDROCK: ${{ inputs.use_bedrock == 'true' && '1' || '' }}
         CLAUDE_CODE_USE_VERTEX: ${{ inputs.use_vertex == 'true' && '1' || '' }}
+
+        # Codex configuration
+        INPUT_USE_CODEX: ${{ inputs.use_codex }}
+        INPUT_OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        INPUT_OPENAI_BASE_URL: ${{ inputs.openai_base_url }}
+        INPUT_PATH_TO_CODEX_EXECUTABLE: ${{ inputs.path_to_codex_executable }}
+        OPENAI_API_KEY: ${{ inputs.openai_api_key }}
+        OPENAI_BASE_URL: ${{ inputs.openai_base_url }}
 
         # AWS configuration
         AWS_REGION: ${{ env.AWS_REGION }}
