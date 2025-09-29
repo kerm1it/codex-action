@@ -116,15 +116,25 @@ function parseClaudeArgs(claudeArgs: string): {
     const arg = args[i];
 
     if (arg === "--mcp-config" && i + 1 < args.length) {
-      mcpConfigs.push(args[i + 1]);
+      const configValue = args[i + 1];
+      if (configValue) {
+        mcpConfigs.push(configValue);
+      }
       i++; // Skip the next argument as it's the config value
     } else if (arg === "--allowedTools" && i + 1 < args.length) {
       const toolsStr = args[i + 1];
-      allowedTools.push(...toolsStr.split(",").map((t) => t.trim()));
+      if (toolsStr) {
+        allowedTools.push(...toolsStr.split(",").map((t) => t.trim()));
+      }
       i++; // Skip the next argument as it's the tools value
-    } else if (!arg.startsWith("--verbose") && !arg.includes("output-format")) {
+    } else if (
+      !arg?.startsWith("--verbose") &&
+      !arg?.includes("output-format")
+    ) {
       // Skip Claude-specific args that don't map to Codex
-      otherArgs.push(arg);
+      if (arg) {
+        otherArgs.push(arg);
+      }
     }
   }
 

@@ -36,6 +36,9 @@ jobs:
           # Use Codex instead of Claude
           use_codex: "true"
           github_token: ${{ secrets.github_token }}
+
+          # Codex-specific configuration
+          trigger_phrase: "@codex" # 关键修复：设置 Codex 触发词
           openai_api_key: ${{ secrets.OPENAI_API_KEY }}
           openai_base_url: ${{ secrets.OPENAI_BASE_URL }} # Optional: for custom endpoints
           codex_args: "--timeout 300s" # Custom Codex arguments if needed

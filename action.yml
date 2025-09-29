@@ -244,7 +244,7 @@ runs:
         INPUT_PROMPT_FILE: ${{ runner.temp }}/claude-prompts/claude-prompt.txt
         INPUT_SETTINGS: ${{ inputs.settings }}
         INPUT_CLAUDE_ARGS: ${{ steps.prepare.outputs.claude_args }}
-        INPUT_CODEX_ARGS: ${{ inputs.codex_args }}
+        INPUT_CODEX_ARGS: ${{ steps.prepare.outputs.codex_args }}
         INPUT_EXPERIMENTAL_SLASH_COMMANDS_DIR: ${{ github.action_path }}/slash-commands
         INPUT_ACTION_INPUTS_PRESENT: ${{ steps.prepare.outputs.action_inputs_present }}
         INPUT_PATH_TO_CLAUDE_CODE_EXECUTABLE: ${{ inputs.path_to_claude_code_executable }}

@@ -11,9 +11,7 @@ describe("prepareCodexConfig", () => {
   });
 
   it("should generate basic Codex arguments", () => {
-    const options: CodexOptions = {
-      model: "gpt-4",
-    };
+    const options: CodexOptions = {};
 
     const config = prepareCodexConfig(testPromptPath, options);
 
