@@ -33,32 +33,36 @@ function convertMcpConfigToCliArgs(mcpConfigJson: string): string[] {
     )) {
       const config = serverConfig as any;
 
-      // Add server command
+      // Add server command (TOML string format)
       if (config.command) {
         args.push("-c", `mcp_servers.${serverId}.command="${config.command}"`);
       }
 
-      // Add server arguments as JSON array
+      // Add server arguments as TOML array
+      // Use single quotes to wrap the entire value so shell doesn't interpret it
       if (config.args && Array.isArray(config.args)) {
-        args.push(
-          "-c",
-          `mcp_servers.${serverId}.args=${JSON.stringify(config.args)}`,
-        );
+        // TOML array format: ["item1", "item2"]
+        const tomlArray = JSON.stringify(config.args);
+        args.push("-c", `mcp_servers.${serverId}.args='${tomlArray}'`);
       }
 
-      // Add environment variables - each as separate config entry
+      // Add environment variables as TOML table
+      // Format: env = { "KEY1" = "value1", "KEY2" = "value2" }
       if (config.env && typeof config.env === "object") {
-        for (const [key, value] of Object.entries(config.env)) {
-          // Escape double quotes in values
+        const envEntries = Object.entries(config.env).map(([key, value]) => {
+          // Escape quotes in values for TOML
           const escapedValue = String(value).replace(/"/g, '\\"');
+          return `"${key}" = "${escapedValue}"`;
+        });
+        if (envEntries.length > 0) {
           args.push(
             "-c",
-            `mcp_servers.${serverId}.env.${key}="${escapedValue}"`,
+            `mcp_servers.${serverId}.env='{ ${envEntries.join(", ")} }'`,
           );
         }
       }
 
-      // Add timeouts if specified
+      // Add timeouts if specified (TOML integer format)
       if (config.startup_timeout_sec) {
         args.push(
           "-c",
