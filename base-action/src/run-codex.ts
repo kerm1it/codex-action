@@ -57,12 +57,18 @@ export function prepareCodexConfig(
     process.env.INPUT_OPENAI_API_KEY || process.env.OPENAI_API_KEY;
   if (openaiApiKey) {
     customEnv.OPENAI_API_KEY = openaiApiKey;
+    console.log("🔑 OpenAI API key configured for Codex process");
+  } else {
+    console.log("⚠️  No OpenAI API key found - Codex will likely fail with 401 Unauthorized");
   }
 
   const openaiBaseUrl =
     process.env.INPUT_OPENAI_BASE_URL || process.env.OPENAI_BASE_URL;
   if (openaiBaseUrl) {
     customEnv.OPENAI_BASE_URL = openaiBaseUrl;
+    console.log(`🌐 OpenAI Base URL configured: ${openaiBaseUrl}`);
+  } else {
+    console.log("🌐 Using default OpenAI Base URL (https://api.openai.com/v1)");
   }
 
   // Set GitHub token if available (for MCP servers)
@@ -74,6 +80,36 @@ export function prepareCodexConfig(
   if (process.env.INPUT_ACTION_INPUTS_PRESENT) {
     customEnv.GITHUB_ACTION_INPUTS = process.env.INPUT_ACTION_INPUTS_PRESENT;
   }
+
+  // Debug: Log source and target environment variables
+  console.log("🐛 Environment variable sources checked:");
+  console.log(`  - INPUT_OPENAI_API_KEY: ${process.env.INPUT_OPENAI_API_KEY ? '[SET]' : '[NOT SET]'}`);
+  console.log(`  - OPENAI_API_KEY: ${process.env.OPENAI_API_KEY ? '[SET]' : '[NOT SET]'}`);
+  console.log(`  - INPUT_OPENAI_BASE_URL: ${process.env.INPUT_OPENAI_BASE_URL || '[NOT SET]'}`);
+  console.log(`  - OPENAI_BASE_URL: ${process.env.OPENAI_BASE_URL || '[NOT SET]'}`);
+
+  console.log("🐛 Environment variables being passed to Codex process:");
+  const relevantVars = [
+    'OPENAI_API_KEY',
+    'OPENAI_BASE_URL',
+    'GITHUB_TOKEN',
+    'REPO_OWNER',
+    'REPO_NAME',
+    'CLAUDE_COMMENT_ID',
+    'GITHUB_EVENT_NAME',
+    'GITHUB_API_URL'
+  ];
+
+  relevantVars.forEach(varName => {
+    if (customEnv[varName]) {
+      const value = varName.includes('KEY') || varName.includes('TOKEN')
+        ? '[SET]'
+        : customEnv[varName];
+      console.log(`  - ${varName}: ${value}`);
+    } else {
+      console.log(`  - ${varName}: [NOT SET]`);
+    }
+  });
 
   return {
     codexArgs,
