@@ -204,7 +204,7 @@ runs:
           if [ -z "${{ inputs.path_to_codex_executable }}" ]; then
             echo "Installing Codex CLI..."
             npm install -g @openai/codex
-            code login --api-key "${{ inputs.openai_api_key }}"
+            codex login --api-key "${{ inputs.openai_api_key }}"
           else
             echo "Using custom Codex executable: ${{ inputs.path_to_codex_executable }}"
             # Add the directory containing the custom executable to PATH
