@@ -37,6 +37,7 @@ export function prepareCodexConfig(
     // Fallback to basic Codex arguments if no pre-built args provided
     codexArgs.push(
       "exec",
+      "--full-auto",
       "--experimental-json",
       "--dangerously-bypass-approvals-and-sandbox",
     );

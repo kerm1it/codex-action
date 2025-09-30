@@ -112,7 +112,7 @@ export const tagMode: Mode = {
       claudeBranch: branchInfo.claudeBranch,
     });
 
-    await createPrompt(tagMode, modeContext, githubData, context);
+    const promptContent = await createPrompt(tagMode, modeContext, githubData, context);
 
     const userClaudeArgs = process.env.CLAUDE_ARGS || "";
     const userAllowedMCPTools = parseAllowedTools(userClaudeArgs).filter(
@@ -207,6 +207,7 @@ export const tagMode: Mode = {
         claudeArgs.trim(),
         undefined,
         userCodexArgs,
+        promptContent
       );
 
       console.log(

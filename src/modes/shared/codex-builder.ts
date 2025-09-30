@@ -139,6 +139,7 @@ export function buildCodexArgs(
   claudeArgs: string,
   additionalMcpConfig?: string,
   userCodexArgs?: string,
+  prompt?: string
 ): string {
   console.log(`[CODEX-BUILDER] Starting conversion...`);
   console.log(`[CODEX-BUILDER] Input claudeArgs length: ${claudeArgs.length}`);
@@ -177,7 +178,7 @@ export function buildCodexArgs(
   }
 
   // Start with base Codex arguments in correct order
-  codexArgs.push("exec");
+  codexArgs.push("exec", "--full-auto");
 
   // Add user's exec-level options right after 'exec'
   if (userExecOptions.length > 0) {
@@ -191,6 +192,7 @@ export function buildCodexArgs(
   codexArgs.push(
     "--experimental-json",
     "--dangerously-bypass-approvals-and-sandbox",
+    "-c env_key=OPENAI_API_KEY"
   );
 
   // Parse Claude arguments
@@ -223,6 +225,11 @@ export function buildCodexArgs(
   if (otherArgs.length > 0) {
     console.log(`[CODEX-BUILDER] Adding ${otherArgs.length} other arguments`);
     codexArgs.push(...otherArgs);
+  }
+
+  // 将 prompt 放在最后
+  if (prompt && prompt.length > 0) {
+    codexArgs.push(`"${prompt}"`);
   }
 
   const result = codexArgs.join(" ");
