@@ -229,7 +229,7 @@ export function buildCodexArgs(
 
   // 将 prompt 放在最后
   if (prompt && prompt.length > 0) {
-    codexArgs.push(`"${prompt}"`);
+    codexArgs.push(`"深入分析解释一下 react 的渲染机制，还有 react-native"`);
   }
 
   const result = codexArgs.join(" ");
