@@ -17,9 +17,19 @@ export function validateEnvironmentVariables() {
 
   // If using Codex, validate OpenAI requirements instead of Anthropic
   if (useCodex) {
+    console.log("🔍 Validating Codex environment variables...");
+    console.log(`  - INPUT_OPENAI_API_KEY: ${process.env.INPUT_OPENAI_API_KEY ? '[SET]' : '[NOT SET]'}`);
+    console.log(`  - OPENAI_API_KEY: ${process.env.OPENAI_API_KEY ? '[SET]' : '[NOT SET]'}`);
+    console.log(`  - INPUT_OPENAI_BASE_URL: ${process.env.INPUT_OPENAI_BASE_URL ? process.env.INPUT_OPENAI_BASE_URL : '[NOT SET]'}`);
+    console.log(`  - OPENAI_BASE_URL: ${process.env.OPENAI_BASE_URL ? process.env.OPENAI_BASE_URL : '[NOT SET]'}`);
+
     if (!openaiApiKey) {
       errors.push("OPENAI_API_KEY is required when using Codex CLI.");
+      console.log("❌ Missing OPENAI_API_KEY - please ensure it's set as 'openai_api_key' input or 'OPENAI_API_KEY' environment variable");
+    } else {
+      console.log("✅ OpenAI API key found");
     }
+
     // Skip other validations for Codex mode
     if (errors.length > 0) {
       const errorMessage = `Environment variable validation failed:\n${errors.map((e) => `  - ${e}`).join("\n")}`;
