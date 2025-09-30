@@ -191,7 +191,6 @@ export function buildCodexArgs(
   // Then add our required flags
   codexArgs.push(
     "--experimental-json",
-    "--dangerously-bypass-approvals-and-sandbox",
     "-c env_key=OPENAI_API_KEY"
   );
 
