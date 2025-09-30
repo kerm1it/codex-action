@@ -141,9 +141,50 @@ export function buildCodexArgs(
 
   const codexArgs: string[] = [];
 
-  // Start with base Codex arguments
+  // Parse user's custom Codex arguments first to extract exec options
+  let userExecOptions: string[] = [];
+  if (userCodexArgs?.trim()) {
+    console.log(`[CODEX-BUILDER] Parsing user codex args: ${userCodexArgs}`);
+    const userParsed = parseShellArgs(userCodexArgs);
+    const userArgs = userParsed.filter(
+      (arg): arg is string => typeof arg === "string",
+    );
+
+    // Extract exec-level options (like --timeout) vs config options (like -c)
+    for (let i = 0; i < userArgs.length; i++) {
+      const arg = userArgs[i];
+      if (!arg) continue;
+
+      // exec-level options: --timeout, --color, etc.
+      if (
+        arg.startsWith("--") &&
+        !arg.startsWith("--experimental-json") &&
+        !arg.startsWith("--dangerously")
+      ) {
+        userExecOptions.push(arg);
+        // Check if next arg is the value for this option
+        const nextArg = userArgs[i + 1];
+        if (nextArg && !nextArg.startsWith("-")) {
+          userExecOptions.push(nextArg);
+          i++; // Skip the value in next iteration
+        }
+      }
+    }
+  }
+
+  // Start with base Codex arguments in correct order
+  codexArgs.push("exec");
+
+  // Add user's exec-level options right after 'exec'
+  if (userExecOptions.length > 0) {
+    console.log(
+      `[CODEX-BUILDER] Adding ${userExecOptions.length} exec options: ${userExecOptions.join(" ")}`,
+    );
+    codexArgs.push(...userExecOptions);
+  }
+
+  // Then add our required flags
   codexArgs.push(
-    "exec",
     "--experimental-json",
     "--dangerously-bypass-approvals-and-sandbox",
   );
@@ -174,20 +215,10 @@ export function buildCodexArgs(
     `[CODEX-BUILDER] Skipping tools.allowed - Codex allows all tools by default`,
   );
 
-  // Add other compatible arguments
+  // Add other compatible arguments (like additional -c options from user)
   if (otherArgs.length > 0) {
     console.log(`[CODEX-BUILDER] Adding ${otherArgs.length} other arguments`);
     codexArgs.push(...otherArgs);
-  }
-
-  // Add user's custom Codex arguments
-  if (userCodexArgs?.trim()) {
-    console.log(`[CODEX-BUILDER] Adding user codex args: ${userCodexArgs}`);
-    const userParsed = parseShellArgs(userCodexArgs);
-    const userArgs = userParsed.filter(
-      (arg): arg is string => typeof arg === "string",
-    );
-    codexArgs.push(...userArgs);
   }
 
   const result = codexArgs.join(" ");
