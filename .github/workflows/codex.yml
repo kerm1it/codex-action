@@ -19,9 +19,9 @@ jobs:
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@codex') || contains(github.event.issue.title, '@codex')))
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
-      issues: read
+      contents: write
+      pull-requests: write
+      issues: write
       id-token: write
     steps:
       - name: Checkout repository
@@ -35,7 +35,7 @@ jobs:
         with:
           # Use Codex instead of Claude
           use_codex: "true"
-          github_token: ${{ secrets.github_token }}
+          # Let action use GitHub App authentication (OIDC) - do not pass github_token
 
           # Codex-specific configuration
           trigger_phrase: "@codex" # 关键修复：设置 Codex 触发词
