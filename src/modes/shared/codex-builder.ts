@@ -38,7 +38,7 @@ function convertMcpConfigToCliArgs(mcpConfigJson: string): string[] {
         args.push("-c", `mcp_servers.${serverId}.command="${config.command}"`);
       }
 
-      // Add server arguments
+      // Add server arguments as JSON array
       if (config.args && Array.isArray(config.args)) {
         args.push(
           "-c",
@@ -46,15 +46,14 @@ function convertMcpConfigToCliArgs(mcpConfigJson: string): string[] {
         );
       }
 
-      // Add environment variables
+      // Add environment variables - each as separate config entry
       if (config.env && typeof config.env === "object") {
-        const envEntries = Object.entries(config.env).map(
-          ([key, value]) => `${key}="${value}"`,
-        );
-        if (envEntries.length > 0) {
+        for (const [key, value] of Object.entries(config.env)) {
+          // Escape double quotes in values
+          const escapedValue = String(value).replace(/"/g, '\\"');
           args.push(
             "-c",
-            `mcp_servers.${serverId}.env = { ${envEntries.join(", ")} }`,
+            `mcp_servers.${serverId}.env.${key}="${escapedValue}"`,
           );
         }
       }
@@ -63,14 +62,14 @@ function convertMcpConfigToCliArgs(mcpConfigJson: string): string[] {
       if (config.startup_timeout_sec) {
         args.push(
           "-c",
-          `mcp_servers.${serverId}.startup_timeout_sec = ${config.startup_timeout_sec}`,
+          `mcp_servers.${serverId}.startup_timeout_sec=${config.startup_timeout_sec}`,
         );
       }
 
       if (config.tool_timeout_sec) {
         args.push(
           "-c",
-          `mcp_servers.${serverId}.tool_timeout_sec = ${config.tool_timeout_sec}`,
+          `mcp_servers.${serverId}.tool_timeout_sec=${config.tool_timeout_sec}`,
         );
       }
     }
@@ -79,18 +78,6 @@ function convertMcpConfigToCliArgs(mcpConfigJson: string): string[] {
   }
 
   return args;
-}
-
-/**
- * Convert Claude Code allowedTools to Codex configuration
- */
-function convertAllowedToolsToCliArgs(tools: string[]): string[] {
-  if (tools.length === 0) {
-    return [];
-  }
-
-  // Codex uses tools.allowed configuration
-  return ["-c", `tools.allowed=${JSON.stringify(tools)}`];
 }
 
 /**
@@ -164,7 +151,7 @@ export function buildCodexArgs(
   // Parse Claude arguments
   const { mcpConfigs, allowedTools, otherArgs } = parseClaudeArgs(claudeArgs);
   console.log(
-    `[CODEX-BUILDER] Parsed: ${mcpConfigs.length} MCP configs, ${allowedTools.length} tools, ${otherArgs.length} other args`,
+    `[CODEX-BUILDER] Parsed: ${mcpConfigs.length} MCP configs, ${allowedTools.length} tools (ignored for Codex), ${otherArgs.length} other args`,
   );
 
   // Add additional MCP config if provided (from modes)
@@ -182,14 +169,10 @@ export function buildCodexArgs(
     codexArgs.push(...mcpArgs);
   }
 
-  // Convert allowed tools
-  if (allowedTools.length > 0) {
-    console.log(
-      `[CODEX-BUILDER] Converting ${allowedTools.length} allowed tools`,
-    );
-    const toolArgs = convertAllowedToolsToCliArgs(allowedTools);
-    codexArgs.push(...toolArgs);
-  }
+  // Note: Skip allowedTools conversion - Codex defaults to allowing all tools
+  console.log(
+    `[CODEX-BUILDER] Skipping tools.allowed - Codex allows all tools by default`,
+  );
 
   // Add other compatible arguments
   if (otherArgs.length > 0) {

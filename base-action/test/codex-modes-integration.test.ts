@@ -20,8 +20,8 @@ describe("Codex Modes Integration", () => {
     expect(codexArgs).toContain("-c");
     expect(codexArgs).toContain('mcp_servers.github.command="npx"');
 
-    // Should contain converted tools configuration
-    expect(codexArgs).toContain('tools.allowed=["Edit","Read","Write"]');
+    // Should NOT contain tools.allowed - Codex allows all tools by default
+    expect(codexArgs).not.toContain("tools.allowed");
   });
 
   it("should handle user codex args correctly", () => {
