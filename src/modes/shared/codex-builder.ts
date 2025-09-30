@@ -149,6 +149,9 @@ export function buildCodexArgs(
   additionalMcpConfig?: string,
   userCodexArgs?: string,
 ): string {
+  console.log(`[CODEX-BUILDER] Starting conversion...`);
+  console.log(`[CODEX-BUILDER] Input claudeArgs length: ${claudeArgs.length}`);
+
   const codexArgs: string[] = [];
 
   // Start with base Codex arguments
@@ -160,6 +163,9 @@ export function buildCodexArgs(
 
   // Parse Claude arguments
   const { mcpConfigs, allowedTools, otherArgs } = parseClaudeArgs(claudeArgs);
+  console.log(
+    `[CODEX-BUILDER] Parsed: ${mcpConfigs.length} MCP configs, ${allowedTools.length} tools, ${otherArgs.length} other args`,
+  );
 
   // Add additional MCP config if provided (from modes)
   if (additionalMcpConfig) {
@@ -168,21 +174,32 @@ export function buildCodexArgs(
 
   // Convert MCP configurations
   for (const mcpConfig of mcpConfigs) {
+    console.log(
+      `[CODEX-BUILDER] Converting MCP config: ${mcpConfig.substring(0, 100)}...`,
+    );
     const mcpArgs = convertMcpConfigToCliArgs(mcpConfig);
+    console.log(`[CODEX-BUILDER] Converted to ${mcpArgs.length} arguments`);
     codexArgs.push(...mcpArgs);
   }
 
   // Convert allowed tools
   if (allowedTools.length > 0) {
+    console.log(
+      `[CODEX-BUILDER] Converting ${allowedTools.length} allowed tools`,
+    );
     const toolArgs = convertAllowedToolsToCliArgs(allowedTools);
     codexArgs.push(...toolArgs);
   }
 
   // Add other compatible arguments
-  codexArgs.push(...otherArgs);
+  if (otherArgs.length > 0) {
+    console.log(`[CODEX-BUILDER] Adding ${otherArgs.length} other arguments`);
+    codexArgs.push(...otherArgs);
+  }
 
   // Add user's custom Codex arguments
   if (userCodexArgs?.trim()) {
+    console.log(`[CODEX-BUILDER] Adding user codex args: ${userCodexArgs}`);
     const userParsed = parseShellArgs(userCodexArgs);
     const userArgs = userParsed.filter(
       (arg): arg is string => typeof arg === "string",
@@ -190,7 +207,13 @@ export function buildCodexArgs(
     codexArgs.push(...userArgs);
   }
 
-  return codexArgs.join(" ");
+  const result = codexArgs.join(" ");
+  console.log(`[CODEX-BUILDER] Final codex args length: ${result.length}`);
+  console.log(
+    `[CODEX-BUILDER] Final codex args preview: ${result.substring(0, 200)}...`,
+  );
+
+  return result;
 }
 
 /**

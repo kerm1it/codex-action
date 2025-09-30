@@ -188,12 +188,21 @@ export const tagMode: Mode = {
       // Build Codex arguments from Claude arguments and tag mode requirements
       const userCodexArgs =
         process.env.INPUT_CODEX_ARGS || process.env.CODEX_ARGS || "";
+
+      console.log(`[DEBUG] Converting Claude args to Codex format...`);
+      console.log(
+        `[DEBUG] Input Claude args: ${claudeArgs.trim().substring(0, 200)}...`,
+      );
+
       const codexArgs = buildCodexArgs(
         claudeArgs.trim(),
         undefined,
         userCodexArgs,
       );
 
+      console.log(
+        `[DEBUG] Output Codex args: ${codexArgs.substring(0, 200)}...`,
+      );
       core.setOutput("codex_args", codexArgs);
       console.log(
         `Tag mode: Built Codex arguments for ${tagModeTools.length} required tools`,
