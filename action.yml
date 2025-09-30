@@ -183,6 +183,9 @@ runs:
         TRACK_PROGRESS: ${{ inputs.track_progress }}
         ADDITIONAL_PERMISSIONS: ${{ inputs.additional_permissions }}
         CLAUDE_ARGS: ${{ inputs.claude_args }}
+        INPUT_USE_CODEX: ${{ inputs.use_codex }}
+        INPUT_PATH_TO_CODEX_EXECUTABLE: ${{ inputs.path_to_codex_executable }}
+        INPUT_CODEX_ARGS: ${{ inputs.codex_args }}
         ALL_INPUTS: ${{ toJson(inputs) }}
 
     - name: Install Base Action Dependencies

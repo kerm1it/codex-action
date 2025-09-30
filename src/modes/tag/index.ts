@@ -184,7 +184,16 @@ export const tagMode: Mode = {
     }
 
     // Check if we should use Codex instead of Claude
-    if (shouldUseCodex()) {
+    const useCodex = shouldUseCodex();
+    console.log(`[TAG MODE] shouldUseCodex() = ${useCodex}`);
+    console.log(`[TAG MODE] INPUT_USE_CODEX = ${process.env.INPUT_USE_CODEX}`);
+    console.log(
+      `[TAG MODE] INPUT_PATH_TO_CODEX_EXECUTABLE = ${process.env.INPUT_PATH_TO_CODEX_EXECUTABLE}`,
+    );
+
+    if (useCodex) {
+      console.log(`[TAG MODE] Using Codex - starting conversion...`);
+
       // Build Codex arguments from Claude arguments and tag mode requirements
       const userCodexArgs =
         process.env.INPUT_CODEX_ARGS || process.env.CODEX_ARGS || "";
@@ -208,6 +217,7 @@ export const tagMode: Mode = {
         `Tag mode: Built Codex arguments for ${tagModeTools.length} required tools`,
       );
     } else {
+      console.log(`[TAG MODE] Using Claude - no conversion needed`);
       core.setOutput("claude_args", claudeArgs.trim());
     }
 
